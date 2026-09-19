@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweesh — Who verified what</title>
+<style>
+  :root {
+    --bg:#0a0e1a; --panel:#12182b; --panel2:#161d33; --border:#26314d; --text:#e2e8f0; --muted:#8b98b8;
+    --auth:#34d399; --corro:#fbbf24; --self:#94a3b8;
+    --person:#fb923c; --inst:#38bdf8; --reg:#818cf8; --root:#c084fc;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; }
+  body { background:var(--bg); color:var(--text); font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; overflow:hidden; }
+
+  #stage { position:absolute; inset:0; display:block; z-index:1; }
+
+  #resume { position:absolute; left:50%; top:50%; z-index:3; transform-origin:center center; }
+  #resumeImg { display:block; width:100%; height:100%; border-radius:2px; box-shadow:0 10px 50px rgba(0,0,0,.6); }
+
+  .blk { position:absolute; left:0; right:0; cursor:pointer; border-left:3px solid transparent; transition:background .18s ease; }
+  .blk:hover { background:rgba(125,211,252,.08); }
+  .blk.sel { background:rgba(125,211,252,.14); }
+  .blk.auth { border-left-color:var(--auth); }
+  .blk.corro { border-left-color:var(--corro); }
+  .blk.self { border-left-color:var(--self); }
+  .blk .tag {
+    position:absolute; right:3px; top:50%; transform:translateY(-50%);
+    font-size:7.5px; font-weight:800; padding:1.5px 5px; border-radius:6px; white-space:nowrap; display:flex; align-items:center; gap:3px;
+  }
+  .blk.auth .tag { background:rgba(52,211,153,.16); color:var(--auth); border:1px solid rgba(52,211,153,.4); }
+  .blk.corro .tag { background:rgba(251,191,36,.15); color:var(--corro); border:1px solid rgba(251,191,36,.4); }
+  .blk.self .tag { background:rgba(148,163,184,.13); color:var(--self); border:1px solid rgba(148,163,184,.35); }
+  .blk .handle { position:absolute; right:-4px; top:50%; width:8px; height:8px; transform:translateY(-50%); border-radius:50%; }
+
+  .topbar { position:absolute; top:12px; left:16px; right:16px; z-index:6; display:flex; align-items:center; justify-content:space-between; pointer-events:none; }
+  .topbar h1 { font-size:15px; font-weight:700; letter-spacing:-.02em; }
+  .topbar .sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .stats { display:flex; gap:8px; }
+  .stat { background:var(--panel); border:1px solid var(--border); border-radius:9px; padding:6px 11px; text-align:center; min-width:56px; }
+  .stat .n { font-size:15px; font-weight:700; line-height:1; }
+  .stat .l { font-size:8.5px; color:var(--muted); margin-top:2px; letter-spacing:.03em; }
+
+  .legend { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:6; display:flex; gap:11px; flex-wrap:nowrap; justify-content:center; background:rgba(18,24,43,.94); border:1px solid var(--border); border-radius:12px; padding:8px 13px; pointer-events:none; backdrop-filter:blur(4px); white-space:nowrap; }
+  .legend .row { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
+  .legend .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+
+  #info {
+    position:absolute; right:16px; top:56px; z-index:7; width:278px;
+    background:rgba(18,24,43,.96); border:1px solid var(--border); border-radius:14px; padding:14px;
+    opacity:0; transform:translateY(8px); transition:all .3s ease; pointer-events:none; backdrop-filter:blur(6px);
+  }
+  #info.show { opacity:1; transform:none; }
+  #info .i-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  #info .i-name { font-size:14px; font-weight:700; }
+  #info .i-conf { font-size:20px; font-weight:800; }
+  #info .i-conf.green { color:var(--auth); } #info .i-conf.amber { color:var(--corro); } #info .i-conf.gray { color:var(--self); }
+  #info .i-state { font-size:10.5px; font-weight:700; margin:3px 0 9px; }
+  #info .i-state.auth { color:var(--auth); } #info .i-state.corro { color:var(--corro); } #info .i-state.self { color:var(--self); }
+  #info .i-chain { font-size:11px; color:#c3cee6; line-height:1.6; }
+  #info .i-chain b { color:var(--text); }
+  #info .i-chain .rel { color:var(--muted); }
+
+  #tooltip { position:absolute; z-index:8; pointer-events:none; background:rgba(10,14,26,.96); border:1px solid var(--border); border-radius:7px; padding:5px 9px; font-size:10.5px; display:none; }
+  #tooltip .tt-n { font-weight:700; color:var(--text); }
+  #tooltip .tt-s { color:var(--muted); font-size:9.5px; }
+
+  .controls { position:absolute; right:16px; top:52px; z-index:7; display:flex; gap:8px; }
+  button { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:7px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all .15s; }
+  button:hover { border-color:#7dd3fc; color:#7dd3fc; }
+  button.primary { background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; }
+
+  #caption { position:absolute; left:50%; bottom:60px; transform:translateX(-50%); z-index:6; text-align:center; pointer-events:none; transition:opacity .6s ease; }
+  #caption .t { font-size:15px; font-weight:700; letter-spacing:.03em; }
+  #caption .s { font-size:11.5px; color:var(--muted); margin-top:3px; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="topbar">
+  <div>
+    <h1>Sweesh · Who verified what</h1>
+    <div class="sub">a resume at the centre — people who were there on the left, institutions, registers and roots on the right</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="sAuth">0</div><div class="l">authoritative</div></div>
+    <div class="stat"><div class="n" id="sCorro">0</div><div class="l">corroborative</div></div>
+    <div class="stat"><div class="n" id="sSelf">0</div><div class="l">self-asserted</div></div>
+    <div class="stat"><div class="n" id="sNodes">0</div><div class="l">nodes</div></div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="primary" id="flow">▶ animate all</button>
+  <button id="reset">reset</button>
+</div>
+
+<div class="legend">
+  <div class="row"><span class="dot" style="background:var(--auth)"></span> authoritative</div>
+  <div class="row"><span class="dot" style="background:var(--corro)"></span> corroborative</div>
+  <div class="row"><span class="dot" style="background:var(--self)"></span> self-asserted</div>
+  <div class="row"><span class="dot" style="background:var(--person)"></span> person</div>
+  <div class="row"><span class="dot" style="background:var(--inst)"></span> institution</div>
+  <div class="row"><span class="dot" style="background:var(--reg)"></span> register</div>
+  <div class="row"><span class="dot" style="background:var(--root)"></span> root</div>
+</div>
+
+<div id="info"></div>
+<div id="tooltip"></div>
+<div id="caption"><div class="t">Varun Sahni</div><div class="s">one badge · every claim verifiable end to end</div></div>
+
+<div id="resume"><img id="resumeImg" src="./resume.png"></div>
+
+<script>
+(function(){
+  const canvas=document.getElementById('stage');
+  const ctx=canvas.getContext('2d');
+  let W=0,H=0,DPR=1;
+  function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; canvas.width=W*DPR; canvas.height=H*DPR; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0); }
+  addEventListener('resize',resize); resize();
+
+  // ============ resume: centred, zoom out ============
+  const resumeEl=document.getElementById('resume');
+  const rw = Math.min(W*0.24, 250);
+  const rh = rw*(792/612);
+  let Z = 1.9;
+  const Z0 = 1.9, Z1 = 1.0;
+  resumeEl.style.width = rw+'px';
+  resumeEl.style.height = rh+'px';
+  function applyResume(){ resumeEl.style.transform = 'translate(-50%,-50%) scale('+Z+')'; }
+  applyResume();
+  function resRect(){
+    const hw=rw*Z/2, hh=rh*Z/2;
+    return { left:W/2-hw, right:W/2+hw, top:H/2-hh, bottom:H/2+hh };
+  }
+  function blockScreenY(b){ return H/2 + ((b.y0+b.y1)/2 - 0.5)*rh*Z; }
+
+  // ============ data ============
+  const claims=[
+    { id:'nyu', y0:.090, y1:.109, label:'M.S. NYU Courant', state:'auth', conf:98,
+      signers:[{name:'NYU Registrar', role:'records officer', rel:'issued the degree'}],
+      peers:[{name:'Prof. Chen', role:'advisor · NYU', rel:'advised'}],
+      inst:'New York University', reg:'MSCHE', root:'US Dept of Education' },
+    { id:'bits', y0:.114, y1:.134, label:'B.E. BITS-Pilani', state:'auth', conf:96,
+      signers:[{name:'BITS Registrar', role:'records officer', rel:'issued the degree'}],
+      peers:[{name:'Prof. Mehta', role:'professor · BITS', rel:'taught'}],
+      inst:'BITS-Pilani', reg:'NAAC', root:'UGC (India)' },
+    { id:'qual', y0:.165, y1:.275, label:'Qualcomm · Code Buddy', state:'auth', conf:98,
+      signers:[{name:'Ananya Rao', role:'Engineering Manager', rel:'was the manager'},
+               {name:'Marcus Chen', role:'Staff Engineer', rel:'co-signed'}],
+      peers:[{name:'Priya Nair', role:'peer · Qualcomm', rel:'worked alongside'}],
+      inst:'Qualcomm', reg:'Delaware SoS', root:'DE Company Register' },
+    { id:'amd', y0:.281, y1:.347, label:'AMD · bus-trace pipeline', state:'auth', conf:95,
+      signers:[{name:'David Kim', role:'Team Lead', rel:'was the team lead'}],
+      peers:[{name:'Sarah Lin', role:'peer · AMD', rel:'worked alongside'}],
+      inst:'AMD', reg:'Delaware SoS', root:'DE Company Register' },
+    { id:'sc', y0:.353, y1:.396, label:'Standard Chartered · SC Pay', state:'auth', conf:92,
+      signers:[{name:'Rohit Verma', role:'Manager', rel:'was the manager'}],
+      peers:[],
+      inst:'Standard Chartered', reg:'Companies House', root:'UK Company Register' },
+    { id:'ach', y0:.427, y1:.494, label:'Achievements', state:'corro', conf:70,
+      signers:[], peers:[
+        {name:'Ravi Menon', role:'co-finalist', rel:'competed together'},
+        {name:'Neha Joshi', role:'SparQ judge', rel:'judged the entry'},
+        {name:'Sam Kapoor', role:'teammate', rel:'built it together'},
+        {name:'Alex D\'Souza', role:'mentor', rel:'mentored'}] },
+    { id:'cabinai', y0:.525, y1:.602, label:'CabinAI', state:'self', conf:15, signers:[], peers:[] },
+    { id:'myai', y0:.608, y1:.686, label:'MyAI', state:'self', conf:15, signers:[], peers:[] },
+    { id:'health', y0:.691, y1:.778, label:'HealthSense', state:'self', conf:15, signers:[], peers:[] },
+    { id:'compiler', y0:.784, y1:.827, label:'Compiler Construction', state:'corro', conf:60,
+      signers:[], peers:[
+        {name:'Prof. Kumar', role:'instructor', rel:'graded it'},
+        {name:'Rahul Iyer', role:'lab partner', rel:'paired on it'},
+        {name:'Divya Rao', role:'TA', rel:'reviewed it'}] },
+    { id:'lead', y0:.859, y1:.879, label:'Leadership · AR/VR Lab', state:'corro', conf:75,
+      signers:[], peers:[
+        {name:'Aditi Shah', role:'core team', rel:'served with'},
+        {name:'Karan Mehta', role:'member', rel:'was on the team'},
+        {name:'Meera Pillai', role:'organizer', rel:'co-organized'}] },
+    { id:'skills', y0:.911, y1:.961, label:'Technical Skills', state:'self', conf:20, signers:[], peers:[] },
+  ];
+
+  const bgInsts=[
+    ['stanford','Stanford'],['mit','MIT'],['cmu','CMU'],['gatech','Georgia Tech'],
+    ['iitd','IIT Delhi'],['iitb','IIT Bombay'],['iitm','IIT Madras'],
+    ['google','Google'],['meta','Meta'],['microsoft','Microsoft'],['nvidia','NVIDIA'],
+    ['apple','Apple'],['amazon','Amazon'],['intel','Intel'],['tsmc','TSMC'],['arm','Arm'],
+    ['ti','Texas Instruments'],['nxp','NXP'],['synopsys','Synopsys'],['jpm','J.P. Morgan'],
+  ];
+  const affinity=[
+    ['stanford','New York University'],['mit','New York University'],['cmu','New York University'],['gatech','New York University'],
+    ['iitd','BITS-Pilani'],['iitb','BITS-Pilani'],['iitm','BITS-Pilani'],
+    ['google','Qualcomm'],['meta','Qualcomm'],['nvidia','Qualcomm'],['nvidia','AMD'],
+    ['intel','Qualcomm'],['intel','AMD'],['tsmc','Qualcomm'],['tsmc','AMD'],
+    ['arm','Qualcomm'],['arm','AMD'],['apple','AMD'],['microsoft','AMD'],['amazon','AMD'],
+    ['ti','AMD'],['nxp','AMD'],['synopsys','AMD'],['jpm','Standard Chartered'],
+    ['google','meta'],['nvidia','tsmc'],['intel','tsmc'],['arm','tsmc'],['apple','arm'],
+    ['stanford','google'],['mit','google'],['cmu','meta'],['iitd','google'],
+    ['stanford','mit'],['stanford','cmu'],['mit','cmu'],['iitd','iitb'],['iitb','iitm'],
+    ['google','microsoft'],['google','apple'],['meta','microsoft'],['intel','nvidia'],['arm','synopsys'],
+  ];
+
+  // ============ nodes ============
+  const nodes=[]; const byId={};
+  function N(id,label,role,type,conf){ const n={id,label,role,type,conf,x:0,y:0,appear:0,appearAt:0}; byId[id]=n; nodes.push(n); return n; }
+  const edges=[];
+  function E(from,to,label,kind){ edges.push({from,to,label,kind}); }
+
+  // shared institution/register/root
+  const instMap={}, regMap={}, rootMap={};
+  claims.filter(c=>c.state==='auth').forEach(c=>{
+    (instMap[c.inst]=instMap[c.inst]||[]).push(c.id);
+    (regMap[c.reg]=regMap[c.reg]||[]).push(c.id);
+    (rootMap[c.root]=rootMap[c.root]||[]).push(c.id);
+  });
+  Object.keys(instMap).forEach(name=>N('inst:'+name,name,'institution','inst',95));
+  Object.keys(regMap).forEach(name=>N('reg:'+name,name,'register','reg',99));
+  Object.keys(rootMap).forEach(name=>N('root:'+name,name,'trust root','root',100));
+
+  // people
+  claims.forEach(c=>{
+    (c.signers||[]).forEach((s,i)=>N(c.id+'-s'+i,s.name,s.role,'person',90));
+    (c.peers||[]).forEach((p,i)=>N(c.id+'-p'+i,p.name,p.role,'person',55));
+  });
+
+  // background institutions
+  bgInsts.forEach(b=>N('bg:'+b[0],b[1],'institution','bg',35));
+
+  // edges
+  claims.forEach(c=>{
+    (c.signers||[]).forEach((s,i)=>E('res', c.id+'-s'+i, s.rel, 'cp'));
+    (c.peers||[]).forEach((p,i)=>E('res', c.id+'-p'+i, p.rel, 'cp'));
+    if(c.state==='auth'){
+      (c.signers||[]).forEach((s,i)=>E(c.id+'-s'+i, 'inst:'+c.inst, 'delegated by', 'pi'));
+      E('inst:'+c.inst, 'reg:'+c.reg, 'registered in', 'ir');
+      E('reg:'+c.reg, 'root:'+c.root, 'trusted under', 'rk');
+    }
+  });
+  affinity.forEach(([bgName,instName])=>{ const a='bg:'+bgName, b='inst:'+instName; if(byId[a]&&byId[b]) E(a,b,null,'aff'); });
+
+  // ============ layout (per frame, after zoom) ============
+  function layout(){
+    const r = resRect();
+    const leftX = r.left;
+    const rightX = r.right;
+
+    // PEOPLE on the LEFT: signers in a nearer column, peers further out.
+    // Spread people over a TALLER vertical range than the resume so they breathe.
+    claims.forEach(c=>{
+      const cy = blockScreenY(c);
+      // signers: near column, stacked around cy
+      (c.signers||[]).forEach((s,i)=>{
+        const n = byId[c.id+'-s'+i];
+        const total = (c.signers||[]).length;
+        const off = (i-(total-1)/2)*30;
+        n.x = leftX - 110;
+        n.y = cy + off;
+      });
+      // peers: outer column, stacked around cy
+      (c.peers||[]).forEach((p,i)=>{
+        const n = byId[c.id+'-p'+i];
+        const total = (c.peers||[]).length;
+        const off = (i-(total-1)/2)*30;
+        n.x = leftX - 215;
+        n.y = cy + off;
+      });
+    });
+
+    // RIGHT chains
+    const avgY = ids => ids.reduce((s,id)=>s+blockScreenY(claims.find(x=>x.id===id)),0)/ids.length;
+    Object.keys(instMap).forEach(name=>{ const n=byId['inst:'+name]; n.x=rightX+115; n.y=avgY(instMap[name]); });
+    Object.keys(regMap).forEach(name=>{ const n=byId['reg:'+name]; n.x=rightX+230; n.y=avgY(regMap[name]); });
+    Object.keys(rootMap).forEach(name=>{ const n=byId['root:'+name]; n.x=rightX+345; n.y=avgY(rootMap[name]); });
+
+    // background cloud: top and bottom bands (clear of header/legend)
+    const top = bgInsts.slice(0,10), bot = bgInsts.slice(10);
+    top.forEach((b,i)=>{ const n=byId['bg:'+b[0]]; n.x = 60 + i*((W-120)/(top.length-1||1)); n.y = 42; });
+    bot.forEach((b,i)=>{ const n=byId['bg:'+b[0]]; n.x = 60 + i*((W-120)/(bot.length-1||1)); n.y = H-42; });
+  }
+
+  // gentle jiggle for background dots
+  function phys(){
+    nodes.forEach(n=>{ if(n.type==='bg'){ n.x += Math.sin(performance.now()/900 + n.y*0.05)*0.15; } });
+  }
+
+  // ============ draw ============
+  const RAD={ person:12, inst:11, reg:10, root:10, bg:5.5 };
+  const COL={ person:'#fb923c', inst:'#38bdf8', reg:'#818cf8', root:'#c084fc', bg:'#475569' };
+  function hexA(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+  function glow(x,y,r,c,a){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,hexA(c,a));g.addColorStop(1,hexA(c,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+  function grid(){ctx.strokeStyle='rgba(38,49,77,0.26)';ctx.lineWidth=1;const g=44;ctx.beginPath();for(let x=0;x<W;x+=g){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=0;y<H;y+=g){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();}
+  function confColor(c){ return c>=90?'#34d399':c>=55?'#fbbf24':'#94a3b8'; }
+  function confRing(n,r,alpha){
+    if(n.type==='bg'||n.conf==null) return;
+    const c=confColor(n.conf);
+    ctx.strokeStyle=hexA(c,alpha*0.16); ctx.lineWidth=2.2; ctx.beginPath(); ctx.arc(n.x,n.y,r+7,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle=hexA(c,alpha); ctx.lineWidth=2.2; ctx.beginPath(); ctx.arc(n.x,n.y,r+7,-Math.PI/2,-Math.PI/2+(n.conf/100)*2*Math.PI); ctx.stroke();
+  }
+
+  let pulses=[], dim=null;
+  function drawEdge(a,b,color,width,label,dimmed){
+    const alpha=dimmed?0.04:1;
+    ctx.strokeStyle=hexA(color,alpha); ctx.fillStyle=hexA(color,alpha); ctx.lineWidth=width;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const mx=a.x+dx/2, my=a.y+dy/2;
+    const bend=Math.min(Math.abs(dy)*0.3, 26);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.bezierCurveTo(a.x+dx*0.4,a.y+bend, a.x+dx*0.6,b.y-bend, b.x,b.y); ctx.stroke();
+    const ang=Math.atan2(b.y-(b.y-bend),b.x-(a.x+dx*0.6));
+    ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x-8*Math.cos(ang-0.4),b.y-8*Math.sin(ang-0.4)); ctx.lineTo(b.x-8*Math.cos(ang+0.4),b.y-8*Math.sin(ang+0.4)); ctx.closePath(); ctx.fill();
+    if(label && !dimmed){
+      ctx.font='600 8.5px ui-sans-serif,system-ui';
+      const tw=ctx.measureText(label).width;
+      const lx=mx, ly=my+(dy<0?-10:-7);
+      ctx.fillStyle='rgba(10,14,26,0.94)'; ctx.fillRect(lx-tw/2-5,ly-8,tw+10,13);
+      ctx.strokeStyle=hexA(color,0.3); ctx.lineWidth=0.5; ctx.strokeRect(lx-tw/2-5,ly-8,tw+10,13);
+      ctx.fillStyle=color; ctx.textAlign='center'; ctx.fillText(label,lx,ly+1.5); ctx.textAlign='left';
+    }
+  }
+  function drawNode(n,dimmed){
+    const a=n.appear; if(a<=0) return;
+    const ga=dimmed?0.05:a;
+    const r=RAD[n.type]*(0.4+0.6*a), c=COL[n.type];
+    if(!dimmed && n.type!=='bg') glow(n.x,n.y,r*2.6,c,0.2*a);
+    ctx.strokeStyle=hexA(c,ga*0.5); ctx.lineWidth=1.2; ctx.beginPath(); ctx.arc(n.x,n.y,r+3,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle=hexA(c,ga); ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2); ctx.fill();
+    if(n.type==='person'){ ctx.fillStyle=hexA('#0a0e1a',ga); ctx.font='bold 9px ui-sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('👤',n.x,n.y); }
+    else if(n.type!=='bg'){ ctx.fillStyle=hexA('#0a0e1a',ga*0.85); ctx.beginPath(); ctx.arc(n.x,n.y,r*0.5,0,Math.PI*2); ctx.fill(); }
+    ctx.textBaseline='alphabetic';
+    confRing(n,r,ga*0.9);
+    if(!dimmed && n.type!=='bg'){
+      ctx.fillStyle=hexA('#e2e8f0',a); ctx.font=(n.type==='person'?'600 ':'500 ')+'9px ui-sans-serif,system-ui'; ctx.textAlign='center';
+      ctx.fillText(n.label, n.x, n.y+r+11);
+    }
+  }
+
+  function render(){
+    layout();
+    ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a0e1a'; ctx.fillRect(0,0,W,H);
+    grid();
+    // edges
+    edges.forEach(e=>{
+      let a, b=byId[e.to]; if(!b) return;
+      if(e.from==='res'){
+        const c = claims.find(c => (c.signers||[]).some((s,i)=>c.id+'-s'+i===e.to) || (c.peers||[]).some((p,i)=>c.id+'-p'+i===e.to));
+        if(!c) return;
+        a = { x:resRect().left, y:blockScreenY(c) };  // left edge of resume
+      } else { a=byId[e.from]; if(!a) return; }
+      if(a.appear!==undefined && a.appear<=0) return; if(b.appear<=0) return;
+      const key=(e.from==='res'?'res|'+e.to:e.from)+'|'+e.to+'|'+e.kind;
+      const dimmed = dim && !dim.edgeKeys.has(key);
+      if(e.kind==='aff') drawEdge(a,b,'#3a4560',0.8,null,dimmed);
+      else if(e.kind==='cp') drawEdge(a,b,COL.person,1.5,e.label,dimmed);
+      else if(e.kind==='pi') drawEdge(a,b,COL.person,1.2,e.label,dimmed);
+      else if(e.kind==='ir') drawEdge(a,b,COL.inst,1.2,e.label,dimmed);
+      else if(e.kind==='rk') drawEdge(a,b,COL.reg,1.2,e.label,dimmed);
+    });
+    // pulses
+    for(let i=pulses.length-1;i>=0;i--){ const p=pulses[i]; p.t+=0.03; if(p.t>=1){pulses.splice(i,1);continue;} const a=(p.from==='res')?{x:resRect().left,y:p.fromY}:byId[p.from]; const b=byId[p.to]; const x=a.x+(b.x-a.x)*p.t, y=a.y+(b.y-a.y)*p.t; glow(x,y,10,p.color,0.8); ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(x,y,2.4,0,Math.PI*2); ctx.fill(); }
+    // nodes
+    nodes.forEach(n=>{ const dimmed = dim && !dim.nodeIds.has(n.id); drawNode(n,dimmed); });
+  }
+
+  // ============ blocks overlay ============
+  claims.forEach(b=>{
+    const d=document.createElement('div');
+    d.className='blk '+b.state; d.dataset.id=b.id;
+    d.style.top=(b.y0*100)+'%'; d.style.height=((b.y1-b.y0)*100)+'%';
+    const tag=document.createElement('span'); tag.className='tag';
+    const stateWord = b.state==='auth'?'authoritative':b.state==='corro'?((b.peers||[]).length)+' peers':'self';
+    tag.innerHTML = '<span>'+b.conf+'%</span> '+stateWord;
+    d.appendChild(tag);
+    const handle=document.createElement('span'); handle.className='handle';
+    handle.style.background = b.state==='auth'?'var(--auth)':b.state==='corro'?'var(--corro)':'var(--self)';
+    d.appendChild(handle);
+    d.addEventListener('click',e=>{e.stopPropagation(); select(b.id);});
+    resumeEl.appendChild(d);
+  });
+
+  // ============ interaction ============
+  function select(id){
+    const c=claims.find(x=>x.id===id);
+    document.querySelectorAll('.blk').forEach(d=>d.classList.toggle('sel',d.dataset.id===id));
+    const info=document.getElementById('info');
+    const confCls = c.conf>=90?'green':c.conf>=55?'amber':'gray';
+    const nodeIds=new Set(), edgeKeys=new Set();
+    const key=(f,t,k)=>(f==='res'?'res|'+t:f)+'|'+t+'|'+k;
+    const signers=c.signers||[], peers=c.peers||[];
+
+    if(c.state==='auth'){
+      signers.forEach((s,i)=>{ nodeIds.add(c.id+'-s'+i); edgeKeys.add(key('res',c.id+'-s'+i,'cp')); });
+      peers.forEach((p,i)=>{ nodeIds.add(c.id+'-p'+i); edgeKeys.add(key('res',c.id+'-p'+i,'cp')); });
+      const instId='inst:'+c.inst, regId='reg:'+c.reg, rootId='root:'+c.root;
+      nodeIds.add(instId); nodeIds.add(regId); nodeIds.add(rootId);
+      signers.forEach((s,i)=>{ edgeKeys.add(key(c.id+'-s'+i,instId,'pi')); });
+      edgeKeys.add(key(instId,regId,'ir')); edgeKeys.add(key(regId,rootId,'rk'));
+      dim={nodeIds,edgeKeys};
+      let chainHtml='';
+      signers.forEach(s=>{ chainHtml+='<b>'+s.name+'</b> ('+s.role+') <span class="rel">'+s.rel+'</span><br>'; });
+      peers.forEach(p=>{ chainHtml+='<b>'+p.name+'</b> ('+p.role+') <span class="rel">'+p.rel+'</span><br>'; });
+      chainHtml+='<span class="rel">delegated by</span> <b>'+c.inst+'</b><br><span class="rel">registered in</span> <b>'+c.reg+'</b><br><span class="rel">trusted under</span> <b>'+c.root+'</b>';
+      info.innerHTML='<div class="i-head"><span class="i-name">'+c.label+'</span><span class="i-conf '+confCls+'">'+c.conf+'%</span></div><div class="i-state auth">authoritative · chain complete to a root</div><div class="i-chain">'+chainHtml+'</div>';
+      info.classList.add('show');
+      let delay=0; const cy=blockScreenY(c);
+      [...signers.map((s,i)=>c.id+'-s'+i),...peers.map((p,i)=>c.id+'-p'+i)].forEach(id=>{ setTimeout(()=>pulses.push({from:'res',fromY:cy,to:id,t:0,color:COL.person}),delay); delay+=200; });
+      signers.forEach((s,i)=>{ setTimeout(()=>pulses.push({from:c.id+'-s'+i,to:'inst:'+c.inst,t:0,color:COL.person}),delay); delay+=200; });
+      setTimeout(()=>pulses.push({from:'inst:'+c.inst,to:'reg:'+c.reg,t:0,color:COL.inst}),delay);
+      setTimeout(()=>pulses.push({from:'reg:'+c.reg,to:'root:'+c.root,t:0,color:COL.reg}),delay+200);
+    } else if(c.state==='corro'){
+      peers.forEach((p,i)=>{ nodeIds.add(c.id+'-p'+i); edgeKeys.add(key('res',c.id+'-p'+i,'cp')); });
+      dim={nodeIds,edgeKeys};
+      let chainHtml='';
+      peers.forEach(p=>{ chainHtml+='<b>'+p.name+'</b> ('+p.role+') <span class="rel">'+p.rel+'</span><br>'; });
+      info.innerHTML='<div class="i-head"><span class="i-name">'+c.label+'</span><span class="i-conf '+confCls+'">'+c.conf+'%</span></div><div class="i-state corro">corroborative · '+peers.length+' peers · no authority chain</div><div class="i-chain">'+chainHtml+'</div>';
+      info.classList.add('show');
+      const cy=blockScreenY(c);
+      peers.forEach((p,i)=>{ pulses.push({from:'res',fromY:cy,to:c.id+'-p'+i,t:0,color:COL.person}); });
+    } else {
+      dim=null;
+      info.innerHTML='<div class="i-head"><span class="i-name">'+c.label+'</span><span class="i-conf '+confCls+'">'+c.conf+'%</span></div><div class="i-state self">self-asserted · backed by nobody</div><div class="i-chain">The subject\'s own statement, bound to them. Unverified is not false.</div>';
+      info.classList.add('show');
+    }
+  }
+  function clearSel(){ dim=null; document.querySelectorAll('.blk').forEach(d=>d.classList.remove('sel')); document.getElementById('info').classList.remove('show'); }
+
+  function hit(mx,my){ let best=null,bd=1e9; nodes.forEach(n=>{ if(n.appear<0.3)return; const d=Math.hypot(n.x-mx,n.y-my); if(d<RAD[n.type]+8&&d<bd){best=n;bd=d;} }); return best; }
+  canvas.addEventListener('click',e=>{ const r=canvas.getBoundingClientRect(); const n=hit(e.clientX-r.left,e.clientY-r.top); if(n){ const m=n.id.match(/^([a-z]+)-[sp]\d+$/); if(m){ select(m[1]); return; } clearSel(); return; } clearSel(); });
+  canvas.addEventListener('mousemove',e=>{ const r=canvas.getBoundingClientRect(); const n=hit(e.clientX-r.left,e.clientY-r.top); const tt=document.getElementById('tooltip'); if(n&&n.appear>0.5&&n.type!=='bg'){tt.style.display='block';tt.style.left=(e.clientX-r.left+14)+'px';tt.style.top=(e.clientY-r.top+14)+'px';tt.innerHTML='<div class="tt-n">'+n.label+'</div><div class="tt-s">'+n.role+' · '+n.conf+'% confidence</div>';}else tt.style.display='none'; });
+  canvas.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';});
+
+  document.getElementById('flow').addEventListener('click',()=>{ clearSel(); let delay=0; claims.filter(c=>c.state==='auth'||c.state==='corro').forEach(c=>{ const cy=blockScreenY(c); const signers=c.signers||[], peers=c.peers||[]; signers.forEach((s,i)=>{ setTimeout(()=>pulses.push({from:'res',fromY:cy,to:c.id+'-s'+i,t:0,color:COL.person}),delay); delay+=140; }); peers.forEach((p,i)=>{ setTimeout(()=>pulses.push({from:'res',fromY:cy,to:c.id+'-p'+i,t:0,color:COL.person}),delay); delay+=140; }); if(c.state==='auth'){ signers.forEach((s,i)=>{ setTimeout(()=>pulses.push({from:c.id+'-s'+i,to:'inst:'+c.inst,t:0,color:COL.person}),delay); delay+=140; }); setTimeout(()=>pulses.push({from:'inst:'+c.inst,to:'reg:'+c.reg,t:0,color:COL.inst}),delay); setTimeout(()=>pulses.push({from:'reg:'+c.reg,to:'root:'+c.root,t:0,color:COL.reg}),delay+140); } }); });
+  document.getElementById('reset').addEventListener('click',clearSel);
+
+  // ============ camera / appearance ============
+  const APPEAR=500;
+  let started=performance.now();
+  function step(){
+    const t=performance.now()-started;
+    if(t<1300){ Z=Z0; }
+    else if(t<2200){ const p=(t-1300)/900; Z=Z0+(Z1-Z0)*(p*(2-p)); }
+    else Z=Z1;
+    applyResume();
+    document.getElementById('caption').style.opacity = t>2300 ? '0' : '1';
+    nodes.forEach(n=>{
+      let at=0;
+      if(n.type==='person') at=1600;
+      else if(n.type==='inst') at=2100;
+      else if(n.type==='reg') at=2600;
+      else if(n.type==='root') at=3100;
+      else if(n.type==='bg') at=3600;
+      if(t>=at){ const p=(t-at)/APPEAR; n.appear=p>=1?1:Math.min(1,p*(2-p)); }
+    });
+  }
+
+  const sAuth=document.getElementById('sAuth'), sCorro=document.getElementById('sCorro'), sSelf=document.getElementById('sSelf'), sNodes=document.getElementById('sNodes');
+  function stats(){ sAuth.textContent=claims.filter(b=>b.state==='auth').length; sCorro.textContent=claims.filter(b=>b.state==='corro').length; sSelf.textContent=claims.filter(b=>b.state==='self').length; sNodes.textContent=nodes.length; }
+
+  setInterval(()=>{ step(); phys(); stats(); render(); },16);
+  stats();
+})();
+</script>
+</body>
+</html>
