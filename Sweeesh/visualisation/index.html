@@ -9,14 +9,15 @@
     --bg:#0a0e1a; --panel:#12182b; --panel2:#161d33; --border:#26314d; --text:#e2e8f0; --muted:#8b98b8;
     --auth:#34d399; --corro:#fbbf24; --self:#94a3b8;
     --person:#fb923c; --inst:#38bdf8; --reg:#818cf8; --root:#c084fc;
+    --sbw:234px;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
   html,body { height:100%; }
   body { background:var(--bg); color:var(--text); font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; overflow:hidden; }
 
-  #stage { position:absolute; inset:0; display:block; z-index:1; }
+  #stage { position:absolute; top:0; left:0; width:calc(100% - var(--sbw)); height:100%; display:block; z-index:1; }
 
-  #resume { position:absolute; left:50%; top:50%; z-index:3; transform-origin:center center; }
+  #resume { position:absolute; left:calc((100% - var(--sbw)) / 2); top:50%; z-index:3; transform-origin:center center; }
   #resumeImg { display:block; width:100%; height:100%; border-radius:2px; box-shadow:0 10px 50px rgba(0,0,0,.6); }
 
   .blk { position:absolute; left:0; right:0; cursor:pointer; border-left:3px solid transparent; transition:background .18s ease; }
@@ -34,7 +35,7 @@
   .blk.self .tag { background:rgba(148,163,184,.13); color:var(--self); border:1px solid rgba(148,163,184,.35); }
   .blk .handle { position:absolute; right:-4px; top:50%; width:8px; height:8px; transform:translateY(-50%); border-radius:50%; }
 
-  .topbar { position:absolute; top:12px; left:16px; right:16px; z-index:6; display:flex; align-items:center; justify-content:space-between; pointer-events:none; }
+  .topbar { position:absolute; top:12px; left:16px; right:calc(var(--sbw) + 16px); z-index:6; display:flex; align-items:center; justify-content:space-between; pointer-events:none; }
   .topbar h1 { font-size:15px; font-weight:700; letter-spacing:-.02em; }
   .topbar .sub { font-size:11px; color:var(--muted); margin-top:2px; }
   .stats { display:flex; gap:8px; }
@@ -42,12 +43,12 @@
   .stat .n { font-size:15px; font-weight:700; line-height:1; }
   .stat .l { font-size:8.5px; color:var(--muted); margin-top:2px; letter-spacing:.03em; }
 
-  .legend { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:6; display:flex; gap:11px; flex-wrap:nowrap; justify-content:center; background:rgba(18,24,43,.94); border:1px solid var(--border); border-radius:12px; padding:8px 13px; pointer-events:none; backdrop-filter:blur(4px); white-space:nowrap; }
+  .legend { position:absolute; left:calc((100% - var(--sbw))/2); bottom:10px; transform:translateX(-50%); z-index:6; display:flex; gap:11px; flex-wrap:nowrap; justify-content:center; background:rgba(18,24,43,.94); border:1px solid var(--border); border-radius:12px; padding:8px 13px; pointer-events:none; backdrop-filter:blur(4px); white-space:nowrap; }
   .legend .row { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
   .legend .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
 
   #info {
-    position:absolute; right:16px; top:56px; z-index:7; width:278px;
+    position:absolute; right:calc(var(--sbw) + 16px); top:56px; z-index:7; width:278px;
     background:rgba(18,24,43,.96); border:1px solid var(--border); border-radius:14px; padding:14px;
     opacity:0; transform:translateY(8px); transition:all .3s ease; pointer-events:none; backdrop-filter:blur(6px);
   }
@@ -66,14 +67,44 @@
   #tooltip .tt-n { font-weight:700; color:var(--text); }
   #tooltip .tt-s { color:var(--muted); font-size:9.5px; }
 
-  .controls { position:absolute; right:16px; top:52px; z-index:7; display:flex; gap:8px; }
+  .controls { position:absolute; right:calc(var(--sbw) + 16px); top:52px; z-index:7; display:flex; gap:8px; }
   button { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:7px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all .15s; }
   button:hover { border-color:#7dd3fc; color:#7dd3fc; }
   button.primary { background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; }
 
-  #caption { position:absolute; left:50%; bottom:60px; transform:translateX(-50%); z-index:6; text-align:center; pointer-events:none; transition:opacity .6s ease; }
+  #caption { position:absolute; left:calc((100% - var(--sbw))/2); bottom:60px; transform:translateX(-50%); z-index:6; text-align:center; pointer-events:none; transition:opacity .6s ease; }
   #caption .t { font-size:15px; font-weight:700; letter-spacing:.03em; }
   #caption .s { font-size:11.5px; color:var(--muted); margin-top:3px; }
+
+  /* ===== right sidebar: verification ledger ===== */
+  #side { position:absolute; top:0; right:0; bottom:0; width:var(--sbw); z-index:5;
+    background:rgba(14,19,36,.96); border-left:1px solid var(--border);
+    display:flex; flex-direction:column; overflow:hidden; }
+  #side .s-head { padding:14px 15px 12px; border-bottom:1px solid var(--border); }
+  #side .s-title { font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--muted); text-transform:uppercase; }
+  #side .overall { margin-top:8px; display:flex; align-items:center; gap:11px; }
+  #side .ring { position:relative; width:52px; height:52px; flex:0 0 auto; }
+  #side .ring svg { transform:rotate(-90deg); }
+  #side .ring .v { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
+  #side .o-meta .o-label { font-size:11px; color:var(--muted); }
+  #side .o-meta .o-word { font-size:14px; font-weight:800; }
+  #side .o-word.green { color:var(--auth); } #side .o-word.amber { color:var(--corro); } #side .o-word.gray { color:var(--self); }
+  #side .o-break { margin-top:7px; display:flex; gap:6px; flex-wrap:wrap; }
+  #side .o-chip { font-size:8.5px; font-weight:700; padding:2px 7px; border-radius:7px; border:1px solid var(--border); color:var(--muted); }
+  #side .s-list { flex:1; overflow-y:auto; padding:10px 12px 14px; }
+  #side .s-list::-webkit-scrollbar { width:6px; }
+  #side .s-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  .sec { display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:9px; cursor:pointer; border:1px solid transparent; transition:background .15s,border-color .15s; }
+  .sec:hover { background:rgba(125,211,252,.06); }
+  .sec.sel { background:rgba(125,211,252,.10); border-color:rgba(125,211,252,.25); }
+  .sec .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .sec .dot.auth { background:var(--auth); } .sec .dot.corro { background:var(--corro); } .sec .dot.self { background:var(--self); }
+  .sec .name { flex:1; font-size:10.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sec .pct { font-size:10.5px; font-weight:800; flex:0 0 auto; }
+  .sec .pct.green { color:var(--auth); } .sec .pct.amber { color:var(--corro); } .sec .pct.gray { color:var(--self); }
+  .sec .bar { position:relative; flex:0 0 30px; height:4px; background:rgba(38,49,77,.5); border-radius:2px; overflow:hidden; }
+  .sec .bar i { position:absolute; left:0; top:0; bottom:0; border-radius:2px; }
+  .sec .bar i.auth { background:var(--auth); } .sec .bar i.corro { background:var(--corro); } .sec .bar i.self { background:var(--self); }
 </style>
 </head>
 <body>
@@ -111,6 +142,27 @@
 <div id="tooltip"></div>
 <div id="caption"><div class="t">Varun Sahni</div><div class="s">one badge · every claim verifiable end to end</div></div>
 
+<aside id="side">
+  <div class="s-head">
+    <div class="s-title">Verification ledger</div>
+    <div class="overall">
+      <div class="ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(38,49,77,.5)" stroke-width="5"></circle>
+          <circle id="ringFg" cx="26" cy="26" r="21" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="132"></circle>
+        </svg>
+        <div class="v" id="overallPct">0%</div>
+      </div>
+      <div class="o-meta">
+        <div class="o-label">Overall verification</div>
+        <div class="o-word" id="overallWord">—</div>
+      </div>
+    </div>
+    <div class="o-break" id="oBreak"></div>
+  </div>
+  <div class="s-list" id="sList"></div>
+</aside>
+
 <div id="resume"><img id="resumeImg" src="./resume.png"></div>
 
 <script>
@@ -118,12 +170,12 @@
   const canvas=document.getElementById('stage');
   const ctx=canvas.getContext('2d');
   let W=0,H=0,DPR=1;
-  function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; canvas.width=W*DPR; canvas.height=H*DPR; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0); }
+  function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=W*DPR; canvas.height=H*DPR; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0); }
   addEventListener('resize',resize); resize();
 
   // ============ resume: centred, zoom out ============
   const resumeEl=document.getElementById('resume');
-  const rw = Math.min(W*0.24, 250);
+  const rw = Math.min(W*0.26, 300);
   const rh = rw*(792/612);
   let Z = 1.9;
   const Z0 = 1.9, Z1 = 1.0;
@@ -138,47 +190,48 @@
   function blockScreenY(b){ return H/2 + ((b.y0+b.y1)/2 - 0.5)*rh*Z; }
 
   // ============ data ============
+  // People are shown by relationship (role), never by name — the privacy-inversion rule.
   const claims=[
     { id:'nyu', y0:.090, y1:.109, label:'M.S. NYU Courant', state:'auth', conf:98,
-      signers:[{name:'NYU Registrar', role:'records officer', rel:'issued the degree'}],
-      peers:[{name:'Prof. Chen', role:'advisor · NYU', rel:'advised'}],
+      signers:[{rel:'NYU Registrar', sub:'issued degree'}],
+      peers:[{rel:'My advisor at NYU', sub:'advised'}],
       inst:'New York University', reg:'MSCHE', root:'US Dept of Education' },
     { id:'bits', y0:.114, y1:.134, label:'B.E. BITS-Pilani', state:'auth', conf:96,
-      signers:[{name:'BITS Registrar', role:'records officer', rel:'issued the degree'}],
-      peers:[{name:'Prof. Mehta', role:'professor · BITS', rel:'taught'}],
+      signers:[{rel:'BITS Registrar', sub:'issued degree'}],
+      peers:[{rel:'My professor at BITS', sub:'taught'}],
       inst:'BITS-Pilani', reg:'NAAC', root:'UGC (India)' },
     { id:'qual', y0:.165, y1:.275, label:'Qualcomm · Code Buddy', state:'auth', conf:98,
-      signers:[{name:'Ananya Rao', role:'Engineering Manager', rel:'was the manager'},
-               {name:'Marcus Chen', role:'Staff Engineer', rel:'co-signed'}],
-      peers:[{name:'Priya Nair', role:'peer · Qualcomm', rel:'worked alongside'}],
+      signers:[{rel:'My manager at Qualcomm', sub:'managed'},
+               {rel:'Staff engineer', sub:'co-signed'}],
+      peers:[{rel:'A peer at Qualcomm', sub:'alongside'}],
       inst:'Qualcomm', reg:'Delaware SoS', root:'DE Company Register' },
     { id:'amd', y0:.281, y1:.347, label:'AMD · bus-trace pipeline', state:'auth', conf:95,
-      signers:[{name:'David Kim', role:'Team Lead', rel:'was the team lead'}],
-      peers:[{name:'Sarah Lin', role:'peer · AMD', rel:'worked alongside'}],
+      signers:[{rel:'My team lead at AMD', sub:'led team'}],
+      peers:[{rel:'A peer at AMD', sub:'alongside'}],
       inst:'AMD', reg:'Delaware SoS', root:'DE Company Register' },
     { id:'sc', y0:.353, y1:.396, label:'Standard Chartered · SC Pay', state:'auth', conf:92,
-      signers:[{name:'Rohit Verma', role:'Manager', rel:'was the manager'}],
+      signers:[{rel:'My manager at SC', sub:'managed'}],
       peers:[],
       inst:'Standard Chartered', reg:'Companies House', root:'UK Company Register' },
     { id:'ach', y0:.427, y1:.494, label:'Achievements', state:'corro', conf:70,
       signers:[], peers:[
-        {name:'Ravi Menon', role:'co-finalist', rel:'competed together'},
-        {name:'Neha Joshi', role:'SparQ judge', rel:'judged the entry'},
-        {name:'Sam Kapoor', role:'teammate', rel:'built it together'},
-        {name:'Alex D\'Souza', role:'mentor', rel:'mentored'}] },
+        {rel:'Co-finalist', sub:'competed'},
+        {rel:'SparQ judge', sub:'judged'},
+        {rel:'Teammate', sub:'co-built'},
+        {rel:'Mentor', sub:'mentored'}] },
     { id:'cabinai', y0:.525, y1:.602, label:'CabinAI', state:'self', conf:15, signers:[], peers:[] },
     { id:'myai', y0:.608, y1:.686, label:'MyAI', state:'self', conf:15, signers:[], peers:[] },
     { id:'health', y0:.691, y1:.778, label:'HealthSense', state:'self', conf:15, signers:[], peers:[] },
     { id:'compiler', y0:.784, y1:.827, label:'Compiler Construction', state:'corro', conf:60,
       signers:[], peers:[
-        {name:'Prof. Kumar', role:'instructor', rel:'graded it'},
-        {name:'Rahul Iyer', role:'lab partner', rel:'paired on it'},
-        {name:'Divya Rao', role:'TA', rel:'reviewed it'}] },
+        {rel:'Course instructor', sub:'graded'},
+        {rel:'Lab partner', sub:'paired'},
+        {rel:'Teaching assistant', sub:'reviewed'}] },
     { id:'lead', y0:.859, y1:.879, label:'Leadership · AR/VR Lab', state:'corro', conf:75,
       signers:[], peers:[
-        {name:'Aditi Shah', role:'core team', rel:'served with'},
-        {name:'Karan Mehta', role:'member', rel:'was on the team'},
-        {name:'Meera Pillai', role:'organizer', rel:'co-organized'}] },
+        {rel:'Core team member', sub:'served'},
+        {rel:'Team member', sub:'on team'},
+        {rel:'Co-organizer', sub:'co-organized'}] },
     { id:'skills', y0:.911, y1:.961, label:'Technical Skills', state:'self', conf:20, signers:[], peers:[] },
   ];
 
@@ -221,8 +274,8 @@
 
   // people
   claims.forEach(c=>{
-    (c.signers||[]).forEach((s,i)=>N(c.id+'-s'+i,s.name,s.role,'person',90));
-    (c.peers||[]).forEach((p,i)=>N(c.id+'-p'+i,p.name,p.role,'person',55));
+    (c.signers||[]).forEach((s,i)=>N(c.id+'-s'+i,s.rel,s.sub,'person',90));
+    (c.peers||[]).forEach((p,i)=>N(c.id+'-p'+i,p.rel,p.sub,'person',55));
   });
 
   // background institutions
@@ -230,8 +283,8 @@
 
   // edges
   claims.forEach(c=>{
-    (c.signers||[]).forEach((s,i)=>E('res', c.id+'-s'+i, s.rel, 'cp'));
-    (c.peers||[]).forEach((p,i)=>E('res', c.id+'-p'+i, p.rel, 'cp'));
+    (c.signers||[]).forEach((s,i)=>E('res', c.id+'-s'+i, s.sub, 'cp'));
+    (c.peers||[]).forEach((p,i)=>E('res', c.id+'-p'+i, p.sub, 'cp'));
     if(c.state==='auth'){
       (c.signers||[]).forEach((s,i)=>E(c.id+'-s'+i, 'inst:'+c.inst, 'delegated by', 'pi'));
       E('inst:'+c.inst, 'reg:'+c.reg, 'registered in', 'ir');
@@ -246,33 +299,62 @@
     const leftX = r.left;
     const rightX = r.right;
 
-    // PEOPLE on the LEFT: signers in a nearer column, peers further out.
-    // Spread people over a TALLER vertical range than the resume so they breathe.
-    claims.forEach(c=>{
-      const cy = blockScreenY(c);
-      // signers: near column, stacked around cy
-      (c.signers||[]).forEach((s,i)=>{
-        const n = byId[c.id+'-s'+i];
-        const total = (c.signers||[]).length;
-        const off = (i-(total-1)/2)*30;
-        n.x = leftX - 110;
-        n.y = cy + off;
-      });
-      // peers: outer column, stacked around cy
-      (c.peers||[]).forEach((p,i)=>{
-        const n = byId[c.id+'-p'+i];
-        const total = (c.peers||[]).length;
-        const off = (i-(total-1)/2)*30;
-        n.x = leftX - 215;
-        n.y = cy + off;
-      });
+    // PEOPLE on the LEFT: signers in one near column, peers in an adaptive grid
+    // that is guaranteed to fit between the left edge and the resume (no clipping).
+    const claimOrder = [...claims].sort((a,b)=>((a.y0+a.y1)/2)-((b.y0+b.y1)/2));
+    const signers=[], peers=[];
+    claimOrder.forEach(c=>{
+      (c.signers||[]).forEach((s,i)=>signers.push(c.id+'-s'+i));
+      (c.peers||[]).forEach((p,i)=>peers.push(c.id+'-p'+i));
+    });
+    const topPad = 74, botPad = 74;
+    const availH = H - topPad - botPad;
+    const leftX1 = leftX - 70;   // keep labels (~50px half-width) clear of the resume
+
+    // signers: single leftmost column (labels are short relationship names)
+    const signerX = 70;
+    signers.forEach((id,idx)=>{
+      const node = byId[id];
+      node.x = signerX;
+      node.y = topPad + idx*(availH/Math.max(signers.length-1,1));
     });
 
-    // RIGHT chains
-    const avgY = ids => ids.reduce((s,id)=>s+blockScreenY(claims.find(x=>x.id===id)),0)/ids.length;
-    Object.keys(instMap).forEach(name=>{ const n=byId['inst:'+name]; n.x=rightX+115; n.y=avgY(instMap[name]); });
-    Object.keys(regMap).forEach(name=>{ const n=byId['reg:'+name]; n.x=rightX+230; n.y=avgY(regMap[name]); });
-    Object.keys(rootMap).forEach(name=>{ const n=byId['root:'+name]; n.x=rightX+345; n.y=avgY(rootMap[name]); });
+    // peers: grid in the remaining left space; column count shrinks to fit
+    const peerStartX = 155;
+    const availPeerW = Math.max(leftX1 - peerStartX, 90);
+    const peerCols = Math.max(1, Math.min(3, Math.floor(availPeerW / 120)));
+    const perCol = Math.ceil(peers.length / peerCols);
+    const colStep = peerCols>1 ? availPeerW/(peerCols-1) : 0;
+    peers.forEach((id,idx)=>{
+      const col = idx % peerCols, row = Math.floor(idx/peerCols);
+      const node = byId[id];
+      node.x = peerStartX + col*colStep;
+      node.y = topPad + row*(availH/Math.max(perCol-1,1));
+    });
+
+    // RIGHT chains (institution -> register -> root): each column evenly spaced
+    // down the full height, ordered by the mean position of their claims, so
+    // adjacent claims (NYU/BITS) never collapse into an overlap. Column x
+    // positions are adaptive so the farthest (root) labels never clip.
+    const meanY = ids => ids.reduce((s,id)=>s+blockScreenY(claims.find(x=>x.id===id)),0)/ids.length;
+    const orderByY = obj => Object.keys(obj).sort((a,b)=>meanY(obj[a])-meanY(obj[b]));
+    const rightZone = Math.max(W - rightX - 60, 210);   // space to right of resume, minus label clearance
+    const instX = rightX + Math.min(70, rightZone*0.18);
+    const regX  = rightX + Math.min(170, rightZone*0.52);
+    const rootX = rightX + Math.min(275, rightZone*0.82);
+    const rightTop = 104;   // start below the floating controls (animate all / reset)
+    const rightH = H - rightTop - botPad;
+    const placeCol = (obj, prefix, colX) => {
+      const names = orderByY(obj);
+      names.forEach((name,idx)=>{
+        const n = byId[prefix+name];
+        n.x = colX;
+        n.y = rightTop + idx*(rightH/Math.max(names.length-1,1));
+      });
+    };
+    placeCol(instMap,'inst:',instX);
+    placeCol(regMap,'reg:',regX);
+    placeCol(rootMap,'root:',rootX);
 
     // background cloud: top and bottom bands (clear of header/legend)
     const top = bgInsts.slice(0,10), bot = bgInsts.slice(10);
@@ -300,19 +382,28 @@
   }
 
   let pulses=[], dim=null;
-  function drawEdge(a,b,color,width,label,dimmed){
+  function drawEdge(a,b,color,width,label,dimmed,bendOverride){
     const alpha=dimmed?0.04:1;
     ctx.strokeStyle=hexA(color,alpha); ctx.fillStyle=hexA(color,alpha); ctx.lineWidth=width;
     const dx=b.x-a.x, dy=b.y-a.y;
     const mx=a.x+dx/2, my=a.y+dy/2;
-    const bend=Math.min(Math.abs(dy)*0.3, 26);
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.bezierCurveTo(a.x+dx*0.4,a.y+bend, a.x+dx*0.6,b.y-bend, b.x,b.y); ctx.stroke();
-    const ang=Math.atan2(b.y-(b.y-bend),b.x-(a.x+dx*0.6));
+    // 'over-top': arc the edge so its peak clears the resume's top edge (used for
+    // signer->institution edges that cross the page). Otherwise a small default bow.
+    let bend, lx=mx, ly;
+    if(bendOverride==='over-top'){
+      const rtop = resRect().top;
+      if(my > rtop - 30){ bend = -(my - rtop + 30); ly = my + bend - 9; }
+      else { bend = 0; ly = my - 9; }
+    } else {
+      bend = bendOverride != null ? -Math.abs(bendOverride) : Math.min(Math.abs(dy)*0.3, 26);
+      ly = bendOverride != null ? (my + bend - 12) : my - 18;  // lift verb labels clear of node circles
+    }
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.bezierCurveTo(a.x+dx*0.4,a.y+bend, a.x+dx*0.6,b.y+bend, b.x,b.y); ctx.stroke();
+    const ang=Math.atan2(b.y-(b.y+bend),b.x-(a.x+dx*0.6));
     ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x-8*Math.cos(ang-0.4),b.y-8*Math.sin(ang-0.4)); ctx.lineTo(b.x-8*Math.cos(ang+0.4),b.y-8*Math.sin(ang+0.4)); ctx.closePath(); ctx.fill();
     if(label && !dimmed){
       ctx.font='600 8.5px ui-sans-serif,system-ui';
       const tw=ctx.measureText(label).width;
-      const lx=mx, ly=my+(dy<0?-10:-7);
       ctx.fillStyle='rgba(10,14,26,0.94)'; ctx.fillRect(lx-tw/2-5,ly-8,tw+10,13);
       ctx.strokeStyle=hexA(color,0.3); ctx.lineWidth=0.5; ctx.strokeRect(lx-tw/2-5,ly-8,tw+10,13);
       ctx.fillStyle=color; ctx.textAlign='center'; ctx.fillText(label,lx,ly+1.5); ctx.textAlign='left';
@@ -352,7 +443,7 @@
       const dimmed = dim && !dim.edgeKeys.has(key);
       if(e.kind==='aff') drawEdge(a,b,'#3a4560',0.8,null,dimmed);
       else if(e.kind==='cp') drawEdge(a,b,COL.person,1.5,e.label,dimmed);
-      else if(e.kind==='pi') drawEdge(a,b,COL.person,1.2,e.label,dimmed);
+      else if(e.kind==='pi') drawEdge(a,b,COL.person,1.1, (dim && !dimmed) ? e.label : null, dimmed,'over-top');
       else if(e.kind==='ir') drawEdge(a,b,COL.inst,1.2,e.label,dimmed);
       else if(e.kind==='rk') drawEdge(a,b,COL.reg,1.2,e.label,dimmed);
     });
@@ -382,6 +473,7 @@
   function select(id){
     const c=claims.find(x=>x.id===id);
     document.querySelectorAll('.blk').forEach(d=>d.classList.toggle('sel',d.dataset.id===id));
+    syncSide(id);
     const info=document.getElementById('info');
     const confCls = c.conf>=90?'green':c.conf>=55?'amber':'gray';
     const nodeIds=new Set(), edgeKeys=new Set();
@@ -397,8 +489,8 @@
       edgeKeys.add(key(instId,regId,'ir')); edgeKeys.add(key(regId,rootId,'rk'));
       dim={nodeIds,edgeKeys};
       let chainHtml='';
-      signers.forEach(s=>{ chainHtml+='<b>'+s.name+'</b> ('+s.role+') <span class="rel">'+s.rel+'</span><br>'; });
-      peers.forEach(p=>{ chainHtml+='<b>'+p.name+'</b> ('+p.role+') <span class="rel">'+p.rel+'</span><br>'; });
+      signers.forEach(s=>{ chainHtml+='<b>'+s.rel+'</b> <span class="rel">'+s.sub+'</span><br>'; });
+      peers.forEach(p=>{ chainHtml+='<b>'+p.rel+'</b> <span class="rel">'+p.sub+'</span><br>'; });
       chainHtml+='<span class="rel">delegated by</span> <b>'+c.inst+'</b><br><span class="rel">registered in</span> <b>'+c.reg+'</b><br><span class="rel">trusted under</span> <b>'+c.root+'</b>';
       info.innerHTML='<div class="i-head"><span class="i-name">'+c.label+'</span><span class="i-conf '+confCls+'">'+c.conf+'%</span></div><div class="i-state auth">authoritative · chain complete to a root</div><div class="i-chain">'+chainHtml+'</div>';
       info.classList.add('show');
@@ -411,7 +503,7 @@
       peers.forEach((p,i)=>{ nodeIds.add(c.id+'-p'+i); edgeKeys.add(key('res',c.id+'-p'+i,'cp')); });
       dim={nodeIds,edgeKeys};
       let chainHtml='';
-      peers.forEach(p=>{ chainHtml+='<b>'+p.name+'</b> ('+p.role+') <span class="rel">'+p.rel+'</span><br>'; });
+      peers.forEach(p=>{ chainHtml+='<b>'+p.rel+'</b> <span class="rel">'+p.sub+'</span><br>'; });
       info.innerHTML='<div class="i-head"><span class="i-name">'+c.label+'</span><span class="i-conf '+confCls+'">'+c.conf+'%</span></div><div class="i-state corro">corroborative · '+peers.length+' peers · no authority chain</div><div class="i-chain">'+chainHtml+'</div>';
       info.classList.add('show');
       const cy=blockScreenY(c);
@@ -422,7 +514,7 @@
       info.classList.add('show');
     }
   }
-  function clearSel(){ dim=null; document.querySelectorAll('.blk').forEach(d=>d.classList.remove('sel')); document.getElementById('info').classList.remove('show'); }
+  function clearSel(){ dim=null; document.querySelectorAll('.blk').forEach(d=>d.classList.remove('sel')); document.getElementById('info').classList.remove('show'); syncSide(null); }
 
   function hit(mx,my){ let best=null,bd=1e9; nodes.forEach(n=>{ if(n.appear<0.3)return; const d=Math.hypot(n.x-mx,n.y-my); if(d<RAD[n.type]+8&&d<bd){best=n;bd=d;} }); return best; }
   canvas.addEventListener('click',e=>{ const r=canvas.getBoundingClientRect(); const n=hit(e.clientX-r.left,e.clientY-r.top); if(n){ const m=n.id.match(/^([a-z]+)-[sp]\d+$/); if(m){ select(m[1]); return; } clearSel(); return; } clearSel(); });
@@ -456,6 +548,62 @@
   const sAuth=document.getElementById('sAuth'), sCorro=document.getElementById('sCorro'), sSelf=document.getElementById('sSelf'), sNodes=document.getElementById('sNodes');
   function stats(){ sAuth.textContent=claims.filter(b=>b.state==='auth').length; sCorro.textContent=claims.filter(b=>b.state==='corro').length; sSelf.textContent=claims.filter(b=>b.state==='self').length; sNodes.textContent=nodes.length; }
 
+  // ============ right sidebar: verification ledger ============
+  const confClsFor = c => c>=90?'green':c>=55?'amber':'gray';
+  const RING_C = 2*Math.PI*21;   // circumference of r=21 circle
+  const sList = document.getElementById('sList');
+  const ringFg = document.getElementById('ringFg');
+  const overallPct = document.getElementById('overallPct');
+  const overallWord = document.getElementById('overallWord');
+  const oBreak = document.getElementById('oBreak');
+
+  function buildLedger(){
+    // overall = section-size-weighted mean confidence (each claim's y-span = share of the page it covers)
+    let sumSize=0, sumW=0;
+    claims.forEach(c=>{ const s=(c.y1-c.y0); sumSize+=s; sumW+=c.conf*s; });
+    const overall = sumSize? Math.round(sumW/sumSize) : 0;
+
+    const cls = confClsFor(overall);
+    overallPct.textContent = overall+'%';
+    overallPct.style.color = overall>=90?'var(--auth)':overall>=55?'var(--corro)':'var(--self)';
+    overallWord.textContent = overall>=90?'Highly verified':overall>=55?'Mostly verified':'Lightly verified';
+    overallWord.className = 'o-word '+cls;
+    // ring fill
+    const dash = RING_C*(overall/100);
+    ringFg.setAttribute('stroke-dasharray', RING_C);
+    ringFg.setAttribute('stroke-dashoffset', RING_C - dash);
+    ringFg.setAttribute('stroke', overall>=90?'#34d399':overall>=55?'#fbbf24':'#94a3b8');
+    // breakdown chips
+    const a=claims.filter(c=>c.state==='auth').length, co=claims.filter(c=>c.state==='corro').length, se=claims.filter(c=>c.state==='self').length;
+    oBreak.innerHTML = '<span class="o-chip" style="color:var(--auth)">'+a+' authoritative</span>'+
+                       '<span class="o-chip" style="color:var(--corro)">'+co+' corroborative</span>'+
+                       '<span class="o-chip" style="color:var(--self)">'+se+' self-asserted</span>';
+    // section rows (sorted top-to-bottom as on the page)
+    sList.innerHTML='';
+    const ordered=[...claims].sort((x,y)=>x.y0-y.y0);
+    ordered.forEach(c=>{
+      const row=document.createElement('div');
+      row.className='sec';
+      const stateWord = c.state==='auth'?'authoritative':c.state==='corro'?((c.peers||[]).length)+' peers':'self';
+      row.innerHTML =
+        '<span class="dot '+c.state+'"></span>'+
+        '<span class="name">'+c.label+'</span>'+
+        '<span class="bar"><i class="'+c.state+'" style="width:'+c.conf+'%"></i></span>'+
+        '<span class="pct '+confClsFor(c.conf)+'">'+c.conf+'%</span>';
+      row.title = c.label+' — '+stateWord+' · '+c.conf+'%';
+      row.addEventListener('click',()=>{ select(c.id); });
+      sList.appendChild(row);
+    });
+  }
+
+  // keep the sidebar row highlight in sync with graph selection
+  function syncSide(id){
+    const rows=[...sList.children];
+    rows.forEach(r=>{ r.classList.toggle('sel', r.querySelector('.name').textContent === (claims.find(c=>c.id===id)||{}).label); });
+    if(id){ const c=claims.find(x=>x.id===id); const row=rows.find(r=>r.querySelector('.name').textContent===c.label); if(row) row.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  }
+
+  buildLedger();
   setInterval(()=>{ step(); phys(); stats(); render(); },16);
   stats();
 })();
