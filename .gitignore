@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# temp/check screenshots
+Sweeesh/visualisation/_*.png
+
+# Office lock files
+*.~lock.*#
+~$*
+
+# Python
+__pycache__/
+*.pyc
