@@ -71,6 +71,13 @@
   button { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:7px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all .15s; }
   button:hover { border-color:#7dd3fc; color:#7dd3fc; }
   button.primary { background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; }
+  #qrPanel { position:absolute; right:16px; top:100px; z-index:9; width:300px; background:rgba(18,24,43,.98); border:1px solid var(--border); border-radius:14px; padding:16px; display:none; box-shadow:0 16px 40px rgba(0,0,0,.4); }
+  #qrPanel.show { display:block; }
+  #qrPanel h2 { font-size:14px; margin-bottom:6px; }
+  #qrPanel p { color:var(--muted); font-size:10.5px; line-height:1.45; margin-bottom:10px; }
+  #qrPanel input { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:7px; padding:7px 8px; font-size:11px; margin-bottom:8px; }
+  #qrPanel img { width:220px; height:220px; display:block; margin:12px auto; background:white; padding:8px; }
+  #qrLink { display:block; color:#7dd3fc; font-size:10px; line-height:1.35; overflow-wrap:anywhere; }
 
   #caption { position:absolute; left:calc((100% - var(--sbw))/2); bottom:60px; transform:translateX(-50%); z-index:6; text-align:center; pointer-events:none; transition:opacity .6s ease; }
   #caption .t { font-size:15px; font-weight:700; letter-spacing:.03em; }
@@ -125,6 +132,7 @@
 
 <div class="controls">
   <button class="primary" id="flow">▶ animate all</button>
+  <button id="qr">▣ verify by QR</button>
   <button id="reset">reset</button>
 </div>
 
@@ -140,6 +148,13 @@
 
 <div id="info"></div>
 <div id="tooltip"></div>
+<div id="qrPanel">
+  <h2>Room verification</h2>
+  <p>Attendees scan this code to verify each disclosed claim independently. For phones on the same Wi-Fi, use this computer's LAN URL, for example http://192.168.1.20:4001.</p>
+  <input id="qrBaseUrl" aria-label="Base URL reachable by attendees">
+  <button class="primary" id="makeQr">generate QR</button>
+  <div id="qrResult"></div>
+</div>
 <div id="caption"><div class="t">Varun Sahni</div><div class="s">one badge · every claim verifiable end to end</div></div>
 
 <aside id="side">
@@ -166,7 +181,7 @@
 <div id="resume"><img id="resumeImg" src="./resume.png"></div>
 
 <script>
-(function(){
+(async function(){
   const canvas=document.getElementById('stage');
   const ctx=canvas.getContext('2d');
   let W=0,H=0,DPR=1;
@@ -190,50 +205,31 @@
   function blockScreenY(b){ return H/2 + ((b.y0+b.y1)/2 - 0.5)*rh*Z; }
 
   // ============ data ============
-  // People are shown by relationship (role), never by name — the privacy-inversion rule.
-  const claims=[
-    { id:'nyu', y0:.090, y1:.109, label:'M.S. NYU Courant', state:'auth', conf:98,
-      signers:[{rel:'NYU Registrar', sub:'issued degree'}],
-      peers:[{rel:'My advisor at NYU', sub:'advised'}],
-      inst:'New York University', reg:'MSCHE', root:'US Dept of Education' },
-    { id:'bits', y0:.114, y1:.134, label:'B.E. BITS-Pilani', state:'auth', conf:96,
-      signers:[{rel:'BITS Registrar', sub:'issued degree'}],
-      peers:[{rel:'My professor at BITS', sub:'taught'}],
-      inst:'BITS-Pilani', reg:'NAAC', root:'UGC (India)' },
-    { id:'qual', y0:.165, y1:.275, label:'Qualcomm · Code Buddy', state:'auth', conf:98,
-      signers:[{rel:'My manager at Qualcomm', sub:'managed'},
-               {rel:'Staff engineer', sub:'co-signed'}],
-      peers:[{rel:'A peer at Qualcomm', sub:'alongside'}],
-      inst:'Qualcomm', reg:'Delaware SoS', root:'DE Company Register' },
-    { id:'amd', y0:.281, y1:.347, label:'AMD · bus-trace pipeline', state:'auth', conf:95,
-      signers:[{rel:'My team lead at AMD', sub:'led team'}],
-      peers:[{rel:'A peer at AMD', sub:'alongside'}],
-      inst:'AMD', reg:'Delaware SoS', root:'DE Company Register' },
-    { id:'sc', y0:.353, y1:.396, label:'Standard Chartered · SC Pay', state:'auth', conf:92,
-      signers:[{rel:'My manager at SC', sub:'managed'}],
-      peers:[],
-      inst:'Standard Chartered', reg:'Companies House', root:'UK Company Register' },
-    { id:'ach', y0:.427, y1:.494, label:'Achievements', state:'corro', conf:70,
-      signers:[], peers:[
-        {rel:'Co-finalist', sub:'competed'},
-        {rel:'SparQ judge', sub:'judged'},
-        {rel:'Teammate', sub:'co-built'},
-        {rel:'Mentor', sub:'mentored'}] },
-    { id:'cabinai', y0:.525, y1:.602, label:'CabinAI', state:'self', conf:15, signers:[], peers:[] },
-    { id:'myai', y0:.608, y1:.686, label:'MyAI', state:'self', conf:15, signers:[], peers:[] },
-    { id:'health', y0:.691, y1:.778, label:'HealthSense', state:'self', conf:15, signers:[], peers:[] },
-    { id:'compiler', y0:.784, y1:.827, label:'Compiler Construction', state:'corro', conf:60,
-      signers:[], peers:[
-        {rel:'Course instructor', sub:'graded'},
-        {rel:'Lab partner', sub:'paired'},
-        {rel:'Teaching assistant', sub:'reviewed'}] },
-    { id:'lead', y0:.859, y1:.879, label:'Leadership · AR/VR Lab', state:'corro', conf:75,
-      signers:[], peers:[
-        {rel:'Core team member', sub:'served'},
-        {rel:'Team member', sub:'on team'},
-        {rel:'Co-organizer', sub:'co-organized'}] },
-    { id:'skills', y0:.911, y1:.961, label:'Technical Skills', state:'self', conf:20, signers:[], peers:[] },
-  ];
+  // Nothing here is hardcoded. Every state (auth/corro/self), confidence
+  // number, signer and chain hop below is computed server-side by sweesh-core:
+  // it walks each claim's attesters up their accreditations to a root the
+  // verifier nominated. Delete a link in the registry and this redraws.
+  let claims = [];
+  try {
+    let res = await fetch('/api/resume');
+    if (!res.ok) throw new Error('API unavailable');
+    let data = await res.json();
+    claims = data.claims; // already shaped as {id,y0,y1,label,state,conf,signers,peers,inst,reg,root}
+    document.querySelector('#caption .t').textContent = data.subject.name;
+  } catch (err) {
+    try {
+      const res = await fetch('./resume.json');
+      if (!res.ok) throw new Error('static export unavailable');
+      const data = await res.json();
+      claims = data.claims;
+      document.querySelector('#caption .t').textContent = data.subject.name;
+      document.querySelector('#caption .s').textContent = 'static Pages export · live API unavailable';
+    } catch (staticErr) {
+      console.error('Failed to load /api/resume or ./resume.json', staticErr);
+      document.getElementById('caption').innerHTML =
+        '<div class="t">Could not load Sweesh data</div><div class="s">start the server or rebuild the Pages export</div>';
+    }
+  }
 
   const bgInsts=[
     ['stanford','Stanford'],['mit','MIT'],['cmu','CMU'],['gatech','Georgia Tech'],
@@ -522,6 +518,20 @@
   canvas.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';});
 
   document.getElementById('flow').addEventListener('click',()=>{ clearSel(); let delay=0; claims.filter(c=>c.state==='auth'||c.state==='corro').forEach(c=>{ const cy=blockScreenY(c); const signers=c.signers||[], peers=c.peers||[]; signers.forEach((s,i)=>{ setTimeout(()=>pulses.push({from:'res',fromY:cy,to:c.id+'-s'+i,t:0,color:COL.person}),delay); delay+=140; }); peers.forEach((p,i)=>{ setTimeout(()=>pulses.push({from:'res',fromY:cy,to:c.id+'-p'+i,t:0,color:COL.person}),delay); delay+=140; }); if(c.state==='auth'){ signers.forEach((s,i)=>{ setTimeout(()=>pulses.push({from:c.id+'-s'+i,to:'inst:'+c.inst,t:0,color:COL.person}),delay); delay+=140; }); setTimeout(()=>pulses.push({from:'inst:'+c.inst,to:'reg:'+c.reg,t:0,color:COL.inst}),delay); setTimeout(()=>pulses.push({from:'reg:'+c.reg,to:'root:'+c.root,t:0,color:COL.reg}),delay+140); } }); });
+  const qrPanel=document.getElementById('qrPanel');
+  document.getElementById('qr').addEventListener('click',()=>{ qrPanel.classList.toggle('show'); document.getElementById('qrBaseUrl').value=location.origin; });
+  document.getElementById('makeQr').addEventListener('click',async()=>{
+    const result=document.getElementById('qrResult');
+    result.textContent='creating verification session...';
+    try {
+      const response=await fetch('/api/room/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({baseUrl:document.getElementById('qrBaseUrl').value.trim()})});
+      const data=await response.json();
+      if(!response.ok) throw new Error(data.error||'could not create QR');
+      result.innerHTML='<img alt="Room verification QR code" src="'+data.qrDataUrl+'"><a id="qrLink" target="_blank" rel="noreferrer"></a>';
+      document.getElementById('qrLink').textContent=data.verifyUrl;
+      document.getElementById('qrLink').href=data.verifyUrl;
+    } catch(error) { result.textContent=error.message; }
+  });
   document.getElementById('reset').addEventListener('click',clearSel);
 
   // ============ camera / appearance ============

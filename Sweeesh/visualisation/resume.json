@@ -1,0 +1,553 @@
+{
+  "subject": {
+    "name": "Varun Sahni",
+    "did": "did:key:z4YlsW8-rYACkm7_2XdEoOwkf5KdM2f_mIKuX1aL2zUw"
+  },
+  "trustedRoots": [
+    {
+      "id": "root:usde",
+      "name": "US Dept of Education"
+    },
+    {
+      "id": "root:ugc",
+      "name": "UGC (India)"
+    },
+    {
+      "id": "root:de-register",
+      "name": "DE Company Register"
+    },
+    {
+      "id": "root:uk-register",
+      "name": "UK Company Register"
+    }
+  ],
+  "availableRoots": [
+    {
+      "id": "root:usde",
+      "name": "US Dept of Education"
+    },
+    {
+      "id": "root:ugc",
+      "name": "UGC (India)"
+    },
+    {
+      "id": "root:de-register",
+      "name": "DE Company Register"
+    },
+    {
+      "id": "root:uk-register",
+      "name": "UK Company Register"
+    }
+  ],
+  "summary": {
+    "authoritative": 5,
+    "corroborative": 3,
+    "selfAsserted": 4,
+    "unverified": 0
+  },
+  "claims": [
+    {
+      "id": "nyu",
+      "claimPath": "education.nyu.degree",
+      "label": "M.S. NYU Courant",
+      "y0": 0.09,
+      "y1": 0.109,
+      "state": "auth",
+      "fullState": "authoritative",
+      "conf": 98,
+      "signers": [
+        {
+          "name": "NYU Registrar",
+          "role": "records officer",
+          "rel": "signed under delegation"
+        }
+      ],
+      "peers": [
+        {
+          "name": "Prof. Chen",
+          "role": "advisor · NYU",
+          "rel": "advised",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        }
+      ],
+      "inst": "New York University",
+      "reg": "MSCHE",
+      "root": "US Dept of Education",
+      "chain": [
+        {
+          "from": "NYU Registrar",
+          "to": "New York University",
+          "kind": "institution"
+        },
+        {
+          "from": "New York University",
+          "to": "MSCHE",
+          "kind": "register"
+        },
+        {
+          "from": "MSCHE",
+          "to": "US Dept of Education",
+          "kind": "root"
+        }
+      ],
+      "claims": {
+        "institution": "New York University",
+        "award": "M.S. Computer Science",
+        "school": "Courant Institute",
+        "conferred": "2024-05"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "bits",
+      "claimPath": "education.bits.degree",
+      "label": "B.E. BITS-Pilani",
+      "y0": 0.114,
+      "y1": 0.134,
+      "state": "auth",
+      "fullState": "authoritative",
+      "conf": 98,
+      "signers": [
+        {
+          "name": "BITS Registrar",
+          "role": "records officer",
+          "rel": "signed under delegation"
+        }
+      ],
+      "peers": [
+        {
+          "name": "Prof. Mehta",
+          "role": "professor · BITS",
+          "rel": "taught",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        }
+      ],
+      "inst": "BITS-Pilani",
+      "reg": "NAAC",
+      "root": "UGC (India)",
+      "chain": [
+        {
+          "from": "BITS Registrar",
+          "to": "BITS-Pilani",
+          "kind": "institution"
+        },
+        {
+          "from": "BITS-Pilani",
+          "to": "NAAC",
+          "kind": "register"
+        },
+        {
+          "from": "NAAC",
+          "to": "UGC (India)",
+          "kind": "root"
+        }
+      ],
+      "claims": {
+        "institution": "BITS-Pilani",
+        "award": "B.E. Electrical & Electronics",
+        "conferred": "2020-06"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "qual",
+      "claimPath": "employment.qualcomm.work.codebuddy",
+      "label": "Qualcomm · Code Buddy",
+      "y0": 0.165,
+      "y1": 0.275,
+      "state": "auth",
+      "fullState": "authoritative",
+      "conf": 99,
+      "signers": [
+        {
+          "name": "Ananya Rao",
+          "role": "Engineering Manager",
+          "rel": "signed under delegation"
+        },
+        {
+          "name": "Marcus Chen",
+          "role": "Staff Engineer",
+          "rel": "co-signed"
+        }
+      ],
+      "peers": [
+        {
+          "name": "Priya Nair",
+          "role": "peer · Qualcomm",
+          "rel": "worked alongside",
+          "overlapConfirmed": true,
+          "weight": 1
+        }
+      ],
+      "inst": "Qualcomm",
+      "reg": "Delaware SoS",
+      "root": "DE Company Register",
+      "chain": [
+        {
+          "from": "Ananya Rao",
+          "to": "Qualcomm",
+          "kind": "employer"
+        },
+        {
+          "from": "Qualcomm",
+          "to": "Delaware SoS",
+          "kind": "register"
+        },
+        {
+          "from": "Delaware SoS",
+          "to": "DE Company Register",
+          "kind": "root"
+        }
+      ],
+      "claims": {
+        "statement": "Built Code Buddy, an internal developer assistant",
+        "scope": "team of 6",
+        "tools": [
+          "C++",
+          "Python",
+          "LLVM"
+        ],
+        "teamRole": "tech lead"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "amd",
+      "claimPath": "employment.amd.work.bustrace",
+      "label": "AMD · bus-trace pipeline",
+      "y0": 0.281,
+      "y1": 0.347,
+      "state": "auth",
+      "fullState": "authoritative",
+      "conf": 98,
+      "signers": [
+        {
+          "name": "David Kim",
+          "role": "Team Lead",
+          "rel": "signed under delegation"
+        }
+      ],
+      "peers": [
+        {
+          "name": "Sarah Lin",
+          "role": "peer · AMD",
+          "rel": "worked alongside",
+          "overlapConfirmed": true,
+          "weight": 1
+        }
+      ],
+      "inst": "AMD",
+      "reg": "Delaware SoS",
+      "root": "DE Company Register",
+      "chain": [
+        {
+          "from": "David Kim",
+          "to": "AMD",
+          "kind": "employer"
+        },
+        {
+          "from": "AMD",
+          "to": "Delaware SoS",
+          "kind": "register"
+        },
+        {
+          "from": "Delaware SoS",
+          "to": "DE Company Register",
+          "kind": "root"
+        }
+      ],
+      "claims": {
+        "statement": "Owned the bus-trace analysis pipeline",
+        "tools": [
+          "SystemVerilog",
+          "Python"
+        ],
+        "teamRole": "individual contributor"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "sc",
+      "claimPath": "employment.sc.work.scpay",
+      "label": "Standard Chartered · SC Pay",
+      "y0": 0.353,
+      "y1": 0.396,
+      "state": "auth",
+      "fullState": "authoritative",
+      "conf": 98,
+      "signers": [
+        {
+          "name": "Rohit Verma",
+          "role": "Manager",
+          "rel": "signed under delegation"
+        }
+      ],
+      "peers": [],
+      "inst": "Standard Chartered",
+      "reg": "Companies House",
+      "root": "UK Company Register",
+      "chain": [
+        {
+          "from": "Rohit Verma",
+          "to": "Standard Chartered",
+          "kind": "employer"
+        },
+        {
+          "from": "Standard Chartered",
+          "to": "Companies House",
+          "kind": "register"
+        },
+        {
+          "from": "Companies House",
+          "to": "UK Company Register",
+          "kind": "root"
+        }
+      ],
+      "claims": {
+        "statement": "Delivered SC Pay merchant onboarding flows",
+        "tools": [
+          "Java",
+          "Spring"
+        ],
+        "teamRole": "engineer"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "ach",
+      "claimPath": "achievements.sparq",
+      "label": "Achievements",
+      "y0": 0.427,
+      "y1": 0.494,
+      "state": "corro",
+      "fullState": "corroborative",
+      "conf": 56,
+      "signers": [],
+      "peers": [
+        {
+          "name": "Ravi Menon",
+          "role": "co-finalist",
+          "rel": "competed together",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Neha Joshi",
+          "role": "SparQ judge",
+          "rel": "judged the entry",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Sam Kapoor",
+          "role": "teammate",
+          "rel": "built it together",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Alex D'Souza",
+          "role": "mentor",
+          "rel": "mentored",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        }
+      ],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "rel": "mentored"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "cabinai",
+      "claimPath": "projects.cabinai",
+      "label": "CabinAI",
+      "y0": 0.525,
+      "y1": 0.602,
+      "state": "self",
+      "fullState": "self-asserted",
+      "conf": 15,
+      "signers": [],
+      "peers": [],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "name": "CabinAI",
+        "summary": "In-cabin assistant prototype"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "myai",
+      "claimPath": "projects.myai",
+      "label": "MyAI",
+      "y0": 0.608,
+      "y1": 0.686,
+      "state": "self",
+      "fullState": "self-asserted",
+      "conf": 15,
+      "signers": [],
+      "peers": [],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "name": "MyAI",
+        "summary": "Personal assistant"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "health",
+      "claimPath": "projects.healthsense",
+      "label": "HealthSense",
+      "y0": 0.691,
+      "y1": 0.778,
+      "state": "self",
+      "fullState": "self-asserted",
+      "conf": 15,
+      "signers": [],
+      "peers": [],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "name": "HealthSense",
+        "summary": "Wearable signal analysis"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "compiler",
+      "claimPath": "coursework.compiler",
+      "label": "Compiler Construction",
+      "y0": 0.784,
+      "y1": 0.827,
+      "state": "corro",
+      "fullState": "corroborative",
+      "conf": 51,
+      "signers": [],
+      "peers": [
+        {
+          "name": "Prof. Kumar",
+          "role": "instructor",
+          "rel": "graded it",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Rahul Iyer",
+          "role": "lab partner",
+          "rel": "paired on it",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Divya Rao",
+          "role": "TA",
+          "rel": "reviewed it",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        }
+      ],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "rel": "reviewed it"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "lead",
+      "claimPath": "leadership.arvrlab",
+      "label": "Leadership · AR/VR Lab",
+      "y0": 0.859,
+      "y1": 0.879,
+      "state": "corro",
+      "fullState": "corroborative",
+      "conf": 51,
+      "signers": [],
+      "peers": [
+        {
+          "name": "Aditi Shah",
+          "role": "core team",
+          "rel": "served with",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Karan Mehta",
+          "role": "member",
+          "rel": "was on the team",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        },
+        {
+          "name": "Meera Pillai",
+          "role": "organizer",
+          "rel": "co-organized",
+          "overlapConfirmed": false,
+          "weight": 0.4
+        }
+      ],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "rel": "co-organized"
+      },
+      "basis": null,
+      "authorityFailure": null
+    },
+    {
+      "id": "skills",
+      "claimPath": "skills.technical",
+      "label": "Technical Skills",
+      "y0": 0.911,
+      "y1": 0.961,
+      "state": "self",
+      "fullState": "self-asserted",
+      "conf": 15,
+      "signers": [],
+      "peers": [],
+      "inst": null,
+      "reg": null,
+      "root": null,
+      "chain": [],
+      "claims": {
+        "skills": [
+          "C++",
+          "Python",
+          "TypeScript",
+          "LLVM",
+          "SystemVerilog"
+        ]
+      },
+      "basis": null,
+      "authorityFailure": null
+    }
+  ]
+}

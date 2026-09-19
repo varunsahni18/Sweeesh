@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sweesh verification</title>
+<style>
+  :root { color-scheme: dark; --bg:#0a0e1a; --panel:#12182b; --border:#26314d; --text:#e2e8f0; --muted:#8b98b8; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; }
+  * { box-sizing:border-box; } body { margin:0; min-height:100vh; background:radial-gradient(circle at top,#18233d,var(--bg) 55%); color:var(--text); font:16px ui-sans-serif,system-ui,sans-serif; padding:32px 18px; }
+  main { max-width:760px; margin:auto; } h1 { margin:0 0 6px; font-size:28px; } .sub { color:var(--muted); margin-bottom:24px; }
+  .summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; } .pill { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:10px 14px; } .pill b { display:block; font-size:20px; } .pill span { color:var(--muted); font-size:12px; }
+  .claim { background:rgba(18,24,43,.9); border:1px solid var(--border); border-left:4px solid var(--muted); border-radius:8px; padding:14px; margin:10px 0; } .claim.auth { border-left-color:var(--ok); } .claim.corro { border-left-color:var(--warn); } .claim.self,.claim.unverified { border-left-color:var(--muted); }
+  .claim-head { display:flex; justify-content:space-between; gap:16px; font-weight:700; } .state { text-transform:capitalize; } .auth .state { color:var(--ok); } .corro .state { color:var(--warn); } .details { color:#c3cee6; font-size:13px; margin-top:9px; white-space:pre-wrap; } .meta { color:var(--muted); font-size:12px; margin-top:8px; }
+  .error { color:var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">Checking Sweesh claims</h1>
+  <div class="sub">Each claim is checked independently against the current trust registry.</div>
+  <div id="summary" class="summary"></div>
+  <div id="claims">Loading verification...</div>
+</main>
+<script>
+(async function () {
+  const session = new URLSearchParams(location.search).get('session');
+  const claimsEl = document.getElementById('claims');
+  if (!session) { claimsEl.innerHTML = '<p class="error">Missing verification session.</p>'; return; }
+  try {
+    const response = await fetch('/api/room/sessions/' + encodeURIComponent(session));
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Verification failed');
+    document.getElementById('title').textContent = data.subject.name + ' · verified claims';
+    const summary = data.verification.summary;
+    document.getElementById('summary').innerHTML = Object.entries(summary).map(([key, value]) => `<div class="pill"><b>${value}</b><span>${key}</span></div>`).join('');
+    claimsEl.innerHTML = data.verification.claims.map((claim) => {
+      const state = claim.state.replace('-', ' ');
+      const details = Object.entries(claim.disclosed || {}).map(([key, value]) => `${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`).join('\n');
+      return `<article class="claim ${claim.state}"><div class="claim-head"><span>${claim.claimPath}</span><span class="state">${state}</span></div><div class="details">${details || 'No fields disclosed'}</div><div class="meta">Confidence ${claim.confidence}% · ${claim.changedSinceIssue ? 'changed since issue' : 'current at verification'}</div></article>`;
+    }).join('');
+  } catch (error) { claimsEl.innerHTML = `<p class="error">${error.message}</p>`; }
+}());
+</script>
+</body>
+</html>
