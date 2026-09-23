@@ -19,3 +19,4 @@ with the people who verified each block on the left and the authority chain
 - `resume.png` — rendered resume
 - `render_resume.py` — re-render `resume.png` from a PDF (requires PyMuPDF: `pip install pymupdf`)
 - `extract_blocks.py` — extract block coordinates from a PDF (for re-mapping overlay boxes)
+- 
