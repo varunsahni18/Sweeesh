@@ -1,5 +1,7 @@
 # Sweeesh
 
+**Live demo:** [sweeesh.vercel.app](https://sweeesh.vercel.app)
+
 Chain of custody for facts about a person — every line of a resume checkable, without phoning a university or an old boss, and without the candidate handing over their life history.
 
 One badge carries the claims a person chooses to reveal. The employer's software checks every signature, then checks the signers: verification walks up a delegation chain (person → institution → register → root) until it reaches a root the verifier chose. If any link is missing, expired or revoked, that claim does not pass.
